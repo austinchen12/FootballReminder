@@ -27,7 +27,7 @@ namespace FootballReminder
 
         public IEnumerable<CalendarEvent> GetEvents()
         {
-            return _calendarService.Events.List(_config.GetValue<string>("CalendarId")).Execute().Items
+            return _calendarService.Events.List(_config.GetValue<string>("GoogleCalendarId")).Execute().Items
                 .Where(e => e.Start.DateTime > DateTime.Today && e.Start.DateTime < DateTime.Today.AddMonths(3))
                 .Select(e => new CalendarEvent()
                 {
@@ -70,7 +70,7 @@ namespace FootballReminder
                 }
             };
 
-            _calendarService.Events.Insert(newEvent, _config.GetValue<string>("CalendarId")).Execute();
+            _calendarService.Events.Insert(newEvent, _config.GetValue<string>("GoogleCalendarId")).Execute();
         }
 
         public void AddEvents(IEnumerable<CalendarEvent> calendarEvents)
@@ -109,7 +109,7 @@ namespace FootballReminder
                 }
             };
 
-            _calendarService.Events.Update(newEvent, _config.GetValue<string>("CalendarId"), calendarEvent.ExtraData["EventId"]).Execute();
+            _calendarService.Events.Update(newEvent, _config.GetValue<string>("GoogleCalendarId"), calendarEvent.ExtraData["EventId"]).Execute();
         }
 
         public void UpdateEvents(IEnumerable<CalendarEvent> calendarEvents)
@@ -120,23 +120,20 @@ namespace FootballReminder
             }
         }
 
-        private UserCredential createCredential()
+        private ServiceAccountCredential createCredential()
         {
-            UserCredential credential;
+            ServiceAccountCredential credential;
             string[] Scopes = { CalendarService.Scope.Calendar };
 
             using (var stream =
-                new FileStream($"{Directory.GetCurrentDirectory()}/credentials.json", FileMode.Open, FileAccess.Read))
+                new FileStream($"{Directory.GetCurrentDirectory()}/{_config.GetValue<string>("GoogleCalendarKeyFile")}", FileMode.Open, FileAccess.Read))
             {
-                // The file token.json stores the user's access and refresh tokens, and is created
-                // automatically when the authorization flow completes for the first time.
-                var credPath = $"{Directory.GetCurrentDirectory()}/token.json";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.FromStream(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
+                var confg = Google.Apis.Json.NewtonsoftJsonSerializer.Instance.Deserialize<JsonCredentialParameters>(stream);
+                credential = new ServiceAccountCredential(
+                   new ServiceAccountCredential.Initializer(confg.ClientEmail)
+                   {
+                       Scopes = Scopes
+                   }.FromPrivateKey(confg.PrivateKey));
             }
 
             return credential;
@@ -144,11 +141,11 @@ namespace FootballReminder
 
         private CalendarService createCalendarService()
         {
-            UserCredential credential = createCredential();
+            ServiceAccountCredential credential = createCredential();
             var service = new CalendarService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
-                ApplicationName = "general",
+                ApplicationName = "FootballReminder",
             });
 
             return service;

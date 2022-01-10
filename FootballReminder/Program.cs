@@ -18,8 +18,8 @@ namespace FootballReminder
 
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Build())
-                .Enrich.FromLogContext()
-                .WriteTo.File($"{Directory.GetCurrentDirectory()}/info.log")
+                .WriteTo.File($"{Directory.GetCurrentDirectory()}/info.log",
+                outputTemplate: "[{Timestamp}] {Level:u3}: {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
 
             var host = Host.CreateDefaultBuilder()
@@ -40,7 +40,7 @@ namespace FootballReminder
         {
             builder.SetBasePath($"{Directory.GetCurrentDirectory()}")
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
                 .AddEnvironmentVariables();
         }
     }
