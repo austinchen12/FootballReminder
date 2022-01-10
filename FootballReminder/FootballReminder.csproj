@@ -34,7 +34,7 @@
     <None Update="info.log">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="credentials.json">
+    <None Update="general-313922-a3c5a8585b3d.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
