@@ -3,13 +3,11 @@ using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using FootballReminder.Models;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Calendar.v3;
 using Google.Apis.Calendar.v3.Data;
 using Google.Apis.Services;
-using Google.Apis.Util.Store;
 using FootballReminder.Services;
 
 namespace FootballReminder
@@ -27,20 +25,36 @@ namespace FootballReminder
 
         public IEnumerable<CalendarEvent> GetEvents()
         {
-            return _calendarService.Events.List(_config.GetValue<string>("GoogleCalendarId")).Execute().Items
-                .Where(e => e.Start.DateTime > DateTime.Today && e.Start.DateTime < DateTime.Today.AddMonths(3))
-                .Select(e => new CalendarEvent()
-                {
-                    Summary = e.Summary,
-                    Location = e.Location,
-                    Description = e.Description,
-                    Datetime = e.Start.DateTime.Value,
-                    Duration = e.End.DateTime.Value.Subtract(e.Start.DateTime.Value),
-                    ExtraData = new Dictionary<string, string>() {
-                        { "EventId", e.Id },
-                        { "MatchId", e.ExtendedProperties.Private__["MatchId"] }
-                    }
-                });
+            List<CalendarEvent> results = new List<CalendarEvent>();
+            string calendarId = _config.GetValue<string>("GoogleCalendarId");
+            string pageToken = null;
+
+            do
+            {
+                EventsResource.ListRequest request = _calendarService.Events.List(calendarId);
+                request.PageToken = pageToken;
+                Events events = request.Execute();
+
+                var newEvents = events.Items
+                    .Where(e => e.Start.DateTime > DateTime.Today)
+                    .Select(e => new CalendarEvent()
+                    {
+                        Summary = e.Summary,
+                        Location = e.Location,
+                        Description = e.Description,
+                        Datetime = e.Start.DateTime.Value,
+                        Duration = e.End.DateTime.Value.Subtract(e.Start.DateTime.Value),
+                        ExtraData = new Dictionary<string, string>() {
+                            { "EventId", e.Id },
+                            { "MatchId", e.ExtendedProperties.Private__["MatchId"] }
+                        }
+                    });
+
+                results.AddRange(newEvents);
+                pageToken = events.NextPageToken;
+            } while (pageToken != null);
+
+            return results;
         }
 
         public void AddEvent(CalendarEvent calendarEvent)

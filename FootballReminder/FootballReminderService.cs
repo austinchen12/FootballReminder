@@ -54,7 +54,7 @@ namespace FootballReminder
                 .GroupBy(m => m.ExtraData["MatchId"])
                 .Select(g => g.First())
                 .ToList();
-            
+
             IEnumerable<CalendarEvent> events = _calendar.GetEvents();
 
             var existingMatches = new List<CalendarEvent>();
