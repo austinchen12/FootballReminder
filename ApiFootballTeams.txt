@@ -1,0 +1,32 @@
+"529",Barcelona
+"541",Real Madrid
+"50",Manchester City
+"49",Chelsea
+"40",Liverpool
+"157",Bayern Munich
+"530",Atletico Madrid
+"47",Tottenham
+"496",Juventus
+"165",Dortmund
+"33",Manchester United
+"85",PSG
+"505",Inter
+"489",AC Milan
+"42",Arsenal
+"2",France
+"1",Belgium
+"10",England
+"6",Brazil
+"768",Italy
+"27",Portugal
+"25",Germany
+"26",Argentina
+"7",Uruguay
+"3",Croatia
+"21",Denmark
+"15",Switzerland
+"8",Colombia
+"1118",Netherlands
+"16",Mexico
+"9",Spain
+"2384",USA
